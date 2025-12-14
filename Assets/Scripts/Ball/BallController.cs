@@ -8,6 +8,8 @@ public class BallController : MonoBehaviour
     private float currentSpeed;
     private Vector2 direction;
     
+    public float BaseSpeed => baseSpeed;
+    
     // Zone tracking - can be in multiple zones at once
     private bool inBadZone = false;
     private bool inFineZone = false;

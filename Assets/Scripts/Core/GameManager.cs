@@ -12,8 +12,7 @@ public enum GameState
 public class GameManager : MonoBehaviour
 {
     [Header("Game Settings")]
-    [SerializeField] private float winSpeedPointsThreshold = 100f; // To be tuned based on table size
-    [SerializeField] private float speedPointsIncrementPerCardValue = 1f; // Speed points added when card value > 50
+    [SerializeField] private float winSpeedThreshold = 25f; // Ball speed threshold to win (to be tuned based on table size)
 
     [Header("References")]
     [SerializeField] private BallController ballController;
@@ -31,7 +30,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Vector2 ballResetDirection = Vector2.right;
 
     private GameState currentState = GameState.Playing;
-    private float speedPoints = 0f;
+    private bool canPlayerHit = true; // Track if ball is ready to be hit by player
     private InputSystem_Actions inputActions;
     private InputSystem_Actions.PlayerActions playerActions;
     
@@ -41,7 +40,6 @@ public class GameManager : MonoBehaviour
     private System.Action<InputAction.CallbackContext> onChoiceC;
 
     public GameState CurrentState => currentState;
-    public float SpeedPoints => speedPoints;
 
     private void Awake()
     {
@@ -105,12 +103,20 @@ public class GameManager : MonoBehaviour
         if (ballController == null || cardDisplay == null)
             return;
 
+        // Check if ball is ready to be hit
+        if (!canPlayerHit)
+        {
+            Debug.Log("Ball not ready to be hit - waiting for ball to return from opponent");
+            return;
+        }
+
         // Get current hit quality from ball
         HitQuality hitQuality = ballController.GetCurrentHitQuality();
 
         // Check if miss
         if (hitQuality == HitQuality.Miss)
         {
+            Debug.Log("MISS! Game Over");
             Lose();
             return;
         }
@@ -127,18 +133,23 @@ public class GameManager : MonoBehaviour
         float timingModifier = GetTimingModifier(hitQuality);
         float speedMultiplier = timingModifier;
 
-        // Modify ball speed
-        float newSpeed = ballController.CurrentSpeed * speedMultiplier;
-        ballController.SetSpeed(newSpeed);
-
-        // Increase speed points if card value > 50
-        if (cardValue > 50)
+        // Modify ball speed - use baseSpeed if current speed is 0 (initial serve)
+        float currentSpeed = ballController.CurrentSpeed;
+        if (currentSpeed <= 0f)
         {
-            speedPoints += speedPointsIncrementPerCardValue;
+            currentSpeed = ballController.BaseSpeed;
         }
+        float newSpeed = currentSpeed * speedMultiplier;
+        ballController.SetSpeed(newSpeed);
 
         // Reverse ball direction
         ballController.ReverseDirectionX();
+
+        // Mark ball as not hittable until it returns from opponent
+        canPlayerHit = false;
+
+        // Debug logging
+        Debug.Log($"Ball Hit - Card Value: {cardValue}, Hit Type: {hitQuality}, New Speed: {newSpeed:F2}");
 
         // Play sound
         if (soundFXManager != null)
@@ -167,8 +178,10 @@ public class GameManager : MonoBehaviour
         if (currentState != GameState.Playing)
             return;
 
-        // Check if speed points are high enough to win
-        if (speedPoints >= winSpeedPointsThreshold)
+        // Check if ball speed is high enough to win
+        float currentBallSpeed = ballController != null ? ballController.CurrentSpeed : 0f;
+        Debug.Log($"Win check - Ball Speed: {currentBallSpeed:F2}, Threshold: {winSpeedThreshold:F2}");
+        if (currentBallSpeed >= winSpeedThreshold)
         {
             Win();
         }
@@ -179,6 +192,10 @@ public class GameManager : MonoBehaviour
             {
                 ballController.ReverseDirectionX();
             }
+
+            // Mark ball as ready to be hit by player again
+            canPlayerHit = true;
+            Debug.Log("Ball returned from opponent - ready for player to hit");
 
             if (soundFXManager != null)
             {
@@ -204,7 +221,7 @@ public class GameManager : MonoBehaviour
     public void ResetGame()
     {
         currentState = GameState.Playing;
-        speedPoints = 0f;
+        canPlayerHit = true; // Reset hit state
 
         if (ballController != null)
         {
