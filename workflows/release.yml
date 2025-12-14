@@ -73,7 +73,7 @@ jobs:
         env:
           BUTLER_CREDENTIALS: ${{ secrets.BUTLER_CREDENTIALS }}
           CHANNEL: webgl-beta
-          ITCH_GAME: PROJECT_NAME
+          ITCH_GAME: ping-ping-pong
           ITCH_USER: USER_NAME
           PACKAGE: WebGL
 
