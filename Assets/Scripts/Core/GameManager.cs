@@ -17,7 +17,6 @@ public class GameManager : MonoBehaviour
     [Header("References")]
     [SerializeField] private BallController ballController;
     [SerializeField] private CardDisplay cardDisplay;
-    [SerializeField] private SoundFXManager soundFXManager;
 
     [Header("Timing Modifiers")]
     [SerializeField] private float badModifier = 0.5f;
@@ -81,11 +80,6 @@ public class GameManager : MonoBehaviour
         if (cardDisplay == null)
         {
             cardDisplay = FindObjectOfType<CardDisplay>();
-        }
-
-        if (soundFXManager == null)
-        {
-            soundFXManager = FindObjectOfType<SoundFXManager>();
         }
 
         // Initialize cards
@@ -152,9 +146,9 @@ public class GameManager : MonoBehaviour
         Debug.Log($"Ball Hit - Card Value: {cardValue}, Hit Type: {hitQuality}, New Speed: {newSpeed:F2}");
 
         // Play sound
-        if (soundFXManager != null)
+        if (SoundFXManager.instance != null)
         {
-            soundFXManager.PlayPlayerSwingSound();
+            SoundFXManager.instance.PlayPaddleSound();
         }
 
         // Generate new cards for next round
@@ -197,9 +191,9 @@ public class GameManager : MonoBehaviour
             canPlayerHit = true;
             Debug.Log("Ball returned from opponent - ready for player to hit");
 
-            if (soundFXManager != null)
+            if (SoundFXManager.instance != null)
             {
-                soundFXManager.PlayOpponentHitSound();
+                SoundFXManager.instance.PlayPaddleSound();
             }
         }
     }

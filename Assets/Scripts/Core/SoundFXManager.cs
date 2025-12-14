@@ -2,80 +2,60 @@ using UnityEngine;
 
 public class SoundFXManager : MonoBehaviour
 {
-    [Header("Audio Sources")]
-    [SerializeField] private AudioSource ballHitTableSource;
-    [SerializeField] private AudioSource opponentHitSource;
-    [SerializeField] private AudioSource playerSwingSource;
-    [SerializeField] private AudioSource ballReturnSource;
+    public static SoundFXManager instance;
+
+    [SerializeField] private AudioSource soundFXObject;
 
     [Header("Audio Clips")]
-    [SerializeField] private AudioClip ballHitTableClip;
-    [SerializeField] private AudioClip opponentHitClip;
-    [SerializeField] private AudioClip playerSwingClip;
-    [SerializeField] private AudioClip ballReturnClip;
+    [SerializeField] private AudioClip[] hitTableClips;
+    [SerializeField] private AudioClip[] paddleClips;
 
-    private void Start()
+    private void Awake()
     {
-        // Create audio sources if they don't exist
-        if (ballHitTableSource == null)
+        if (instance == null)
         {
-            GameObject go = new GameObject("BallHitTableAudioSource");
-            go.transform.SetParent(transform);
-            ballHitTableSource = go.AddComponent<AudioSource>();
-        }
-
-        if (opponentHitSource == null)
-        {
-            GameObject go = new GameObject("OpponentHitAudioSource");
-            go.transform.SetParent(transform);
-            opponentHitSource = go.AddComponent<AudioSource>();
-        }
-
-        if (playerSwingSource == null)
-        {
-            GameObject go = new GameObject("PlayerSwingAudioSource");
-            go.transform.SetParent(transform);
-            playerSwingSource = go.AddComponent<AudioSource>();
-        }
-
-        if (ballReturnSource == null)
-        {
-            GameObject go = new GameObject("BallReturnAudioSource");
-            go.transform.SetParent(transform);
-            ballReturnSource = go.AddComponent<AudioSource>();
+            instance = this;
         }
     }
 
-    public void PlayBallHitTableSound()
+    public void PlaySoundFXClip(AudioClip audioClip, Transform spawnTransform, float volume = 1.0f)
     {
-        if (ballHitTableSource != null && ballHitTableClip != null)
+        if (audioClip == null || soundFXObject == null || spawnTransform == null)
         {
-            ballHitTableSource.PlayOneShot(ballHitTableClip);
+            Debug.LogWarning("[SoundFXManager] Missing clip, prefab, or spawn transform.");
+            return;
         }
+
+        AudioSource audioSource = Instantiate(soundFXObject, spawnTransform.position, Quaternion.identity);
+        audioSource.clip = audioClip;
+        audioSource.volume = volume;
+        audioSource.Play();
+
+        float clipLength = audioClip.length;
+        Destroy(audioSource.gameObject, clipLength);
     }
 
-    public void PlayOpponentHitSound()
+    public void PlayRandomSoundFXClip(AudioClip[] audioClips, Transform spawnTransform, float volume = 1.0f)
     {
-        if (opponentHitSource != null && opponentHitClip != null)
+        if (audioClips == null || audioClips.Length == 0)
         {
-            opponentHitSource.PlayOneShot(opponentHitClip);
+            Debug.LogWarning("[SoundFXManager] No clips provided for random selection.");
+            return;
         }
+
+        AudioClip randomClip = audioClips[Random.Range(0, audioClips.Length)];
+        PlaySoundFXClip(randomClip, spawnTransform, volume);
     }
 
-    public void PlayPlayerSwingSound()
+    public void PlayHitTableSound(Transform spawnTransform = null, float volume = 1.0f)
     {
-        if (playerSwingSource != null && playerSwingClip != null)
-        {
-            playerSwingSource.PlayOneShot(playerSwingClip);
-        }
+        Transform targetTransform = spawnTransform != null ? spawnTransform : transform;
+        PlayRandomSoundFXClip(hitTableClips, targetTransform, volume);
     }
 
-    public void PlayBallReturnSound()
+    public void PlayPaddleSound(Transform spawnTransform = null, float volume = 1.0f)
     {
-        if (ballReturnSource != null && ballReturnClip != null)
-        {
-            ballReturnSource.PlayOneShot(ballReturnClip);
-        }
+        Transform targetTransform = spawnTransform != null ? spawnTransform : transform;
+        PlayRandomSoundFXClip(paddleClips, targetTransform, volume);
     }
 }
-
