@@ -25,8 +25,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private float perfectModifier = 1.2f;
 
     [Header("Ball Reset")]
-    [SerializeField] private Vector2 ballResetPosition = Vector2.zero;
-    [SerializeField] private Vector2 ballResetDirection = Vector2.right;
+    [SerializeField] private Vector2 ballResetLocalPosition = new Vector2(4f, 0f); // Relative to parent (board)
 
     private GameState currentState = GameState.Playing;
     private bool canPlayerHit = true; // Track if ball is ready to be hit by player
@@ -81,11 +80,23 @@ public class GameManager : MonoBehaviour
         {
             cardDisplay = FindObjectOfType<CardDisplay>();
         }
+        
+        // Initialize ball to starting position
+        InitializeBall();
 
         // Initialize cards
         if (cardDisplay != null)
         {
             cardDisplay.GenerateNewCards();
+        }
+    }
+    
+    private void InitializeBall()
+    {
+        if (ballController != null)
+        {
+            // Use the ball's initial direction from BallController
+            ballController.ResetBall(ballResetLocalPosition, ballController.InitialDirection);
         }
     }
 
@@ -104,13 +115,20 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        // Get current hit quality from ball
+        // Get current hit quality from ball (check BEFORE clearing zones)
         HitQuality hitQuality = ballController.GetCurrentHitQuality();
+        
+        Debug.Log($"Hit Quality at moment of input: {hitQuality}");
 
         // Check if miss
         if (hitQuality == HitQuality.Miss)
         {
             Debug.Log("MISS! Game Over");
+            // Play missed sound
+            if (SoundFXManager.instance != null && ballController != null)
+            {
+                SoundFXManager.instance.PlayMissedSound(ballController.transform);
+            }
             Lose();
             return;
         }
@@ -138,6 +156,9 @@ public class GameManager : MonoBehaviour
 
         // Reverse ball direction
         ballController.ReverseDirectionX();
+        
+        // Clear all zones when ball reverses - ensures clean state for next return
+        ballController.ClearAllZones();
 
         // Mark ball as not hittable until it returns from opponent
         canPlayerHit = false;
@@ -148,7 +169,7 @@ public class GameManager : MonoBehaviour
         // Play sound
         if (SoundFXManager.instance != null)
         {
-            SoundFXManager.instance.PlayPaddleSound();
+            SoundFXManager.instance.PlayPaddleSound(ballController.transform);
         }
 
         // Generate new cards for next round
@@ -185,15 +206,16 @@ public class GameManager : MonoBehaviour
             if (ballController != null)
             {
                 ballController.ReverseDirectionX();
+                // Don't clear zones here - let them register naturally as ball travels back
             }
 
             // Mark ball as ready to be hit by player again
             canPlayerHit = true;
             Debug.Log("Ball returned from opponent - ready for player to hit");
 
-            if (SoundFXManager.instance != null)
+            if (SoundFXManager.instance != null && ballController != null)
             {
-                SoundFXManager.instance.PlayPaddleSound();
+                SoundFXManager.instance.PlayPaddleSound(ballController.transform);
             }
         }
     }
@@ -202,6 +224,11 @@ public class GameManager : MonoBehaviour
     {
         currentState = GameState.Won;
         Debug.Log("You Win!");
+        // Play missed sound (opponent missed)
+        if (SoundFXManager.instance != null && ballController != null)
+        {
+            SoundFXManager.instance.PlayMissedSound(ballController.transform);
+        }
         // TODO: Add win UI/effects
     }
 
@@ -209,7 +236,15 @@ public class GameManager : MonoBehaviour
     {
         currentState = GameState.Lost;
         Debug.Log("You Lose!");
+        // Wait 5 seconds then reset
+        StartCoroutine(ResetAfterDelay(5f));
         // TODO: Add lose UI/effects
+    }
+    
+    private System.Collections.IEnumerator ResetAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        ResetGame();
     }
 
     public void ResetGame()
@@ -217,10 +252,8 @@ public class GameManager : MonoBehaviour
         currentState = GameState.Playing;
         canPlayerHit = true; // Reset hit state
 
-        if (ballController != null)
-        {
-            ballController.ResetBall(ballResetPosition, ballResetDirection);
-        }
+        // Reset ball to starting position (same as initialization)
+        InitializeBall();
 
         if (cardDisplay != null)
         {
