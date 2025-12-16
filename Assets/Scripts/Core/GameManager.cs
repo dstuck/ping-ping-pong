@@ -75,14 +75,17 @@ public class GameManager : MonoBehaviour
 
     private void OnDestroy()
     {
-        if (playerActions.ChoiceA != null && onChoiceA != null)
-            playerActions.ChoiceA.performed -= onChoiceA;
-        if (playerActions.ChoiceB != null && onChoiceB != null)
-            playerActions.ChoiceB.performed -= onChoiceB;
-        if (playerActions.ChoiceC != null && onChoiceC != null)
-            playerActions.ChoiceC.performed -= onChoiceC;
+        if (playerActions != null)
+        {
+            if (playerActions.ChoiceA != null && onChoiceA != null)
+                playerActions.ChoiceA.performed -= onChoiceA;
+            if (playerActions.ChoiceB != null && onChoiceB != null)
+                playerActions.ChoiceB.performed -= onChoiceB;
+            if (playerActions.ChoiceC != null && onChoiceC != null)
+                playerActions.ChoiceC.performed -= onChoiceC;
 
-        playerActions.Disable();
+            playerActions.Disable();
+        }
         inputActions?.Dispose();
     }
 
@@ -131,7 +134,7 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        // Get current hit quality from ball (check BEFORE clearing zones)
+        // Get current hit quality from ball
         HitQuality hitQuality = ballController.GetCurrentHitQuality();
 
         // Check if miss

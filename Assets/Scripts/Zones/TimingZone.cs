@@ -22,6 +22,7 @@ public class TimingZone : MonoBehaviour
 
     private SpriteRenderer spriteRenderer;
     private BoxCollider2D boxCollider;
+    private GameObject visualChild;
 
     private void Start()
     {
@@ -40,25 +41,25 @@ public class TimingZone : MonoBehaviour
             return;
         }
 
-        spriteRenderer = GetComponent<SpriteRenderer>();
-        if (spriteRenderer == null)
-        {
-            spriteRenderer = gameObject.AddComponent<SpriteRenderer>();
-        }
+        // Create a child GameObject for the visual so we can scale it without affecting the collider
+        visualChild = new GameObject("ZoneVisual");
+        visualChild.transform.SetParent(transform);
+        visualChild.transform.localPosition = Vector3.zero;
+        visualChild.transform.localRotation = Quaternion.identity;
+        
+        spriteRenderer = visualChild.AddComponent<SpriteRenderer>();
 
-        // Create a simple white sprite if none exists
-        if (spriteRenderer.sprite == null)
-        {
-            Texture2D texture = new Texture2D(1, 1);
-            texture.SetPixel(0, 0, Color.white);
-            texture.Apply();
-            Sprite sprite = Sprite.Create(texture, new Rect(0, 0, 1, 1), new Vector2(0.5f, 0.5f), 1f);
-            spriteRenderer.sprite = sprite;
-        }
+        // Create a simple white sprite
+        Texture2D texture = new Texture2D(1, 1);
+        texture.SetPixel(0, 0, Color.white);
+        texture.Apply();
+        Sprite sprite = Sprite.Create(texture, new Rect(0, 0, 1, 1), new Vector2(0.5f, 0.5f), 1f);
+        spriteRenderer.sprite = sprite;
 
-        // Size the sprite to match the collider by scaling the transform
+        // Scale the child transform (not the main transform) to match collider size
+        // This way the collider stays at its original size
         Vector2 colliderSize = boxCollider.size;
-        transform.localScale = new Vector3(colliderSize.x, colliderSize.y, 1f);
+        visualChild.transform.localScale = new Vector3(colliderSize.x, colliderSize.y, 1f);
         
         // Ensure the sprite renderer is set up correctly - render between table (0) and ball (20)
         spriteRenderer.sortingOrder = 10;
