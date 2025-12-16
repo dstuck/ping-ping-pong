@@ -48,27 +48,23 @@ public class BallController : MonoBehaviour
     }
 
     // Zone entry/exit methods
-    public void EnterBadZone() { inBadZone = true; Debug.Log("EnterBadZone"); }
-    public void ExitBadZone() { inBadZone = false; Debug.Log("ExitBadZone"); }
-    public void EnterFineZone() { inFineZone = true; Debug.Log("EnterFineZone"); }
-    public void ExitFineZone() { inFineZone = false; Debug.Log("ExitFineZone"); }
-    public void EnterGoodZone() { inGoodZone = true; Debug.Log("EnterGoodZone"); }
-    public void ExitGoodZone() { inGoodZone = false; Debug.Log("ExitGoodZone"); }
-    public void EnterPerfectZone() { inPerfectZone = true; Debug.Log("EnterPerfectZone"); }
-    public void ExitPerfectZone() { inPerfectZone = false; Debug.Log("ExitPerfectZone"); }
+    public void EnterBadZone() { inBadZone = true; }
+    public void ExitBadZone() { inBadZone = false; }
+    public void EnterFineZone() { inFineZone = true; }
+    public void ExitFineZone() { inFineZone = false; }
+    public void EnterGoodZone() { inGoodZone = true; }
+    public void ExitGoodZone() { inGoodZone = false; }
+    public void EnterPerfectZone() { inPerfectZone = true; }
+    public void ExitPerfectZone() { inPerfectZone = false; }
 
     public HitQuality GetCurrentHitQuality()
     {
         // Priority: Perfect > Good > Fine > Bad > Miss
-        HitQuality result;
-        if (inPerfectZone) result = HitQuality.Perfect;
-        else if (inGoodZone) result = HitQuality.Good;
-        else if (inFineZone) result = HitQuality.Fine;
-        else if (inBadZone) result = HitQuality.Bad;
-        else result = HitQuality.Miss;
-        
-        Debug.Log($"Hit Quality Check - Perfect: {inPerfectZone}, Good: {inGoodZone}, Fine: {inFineZone}, Bad: {inBadZone}, Result: {result}");
-        return result;
+        if (inPerfectZone) return HitQuality.Perfect;
+        if (inGoodZone) return HitQuality.Good;
+        if (inFineZone) return HitQuality.Fine;
+        if (inBadZone) return HitQuality.Bad;
+        return HitQuality.Miss;
     }
 
     public void ResetBall(Vector2 localPosition, Vector2 newDirection)
@@ -88,15 +84,10 @@ public class BallController : MonoBehaviour
     // Clear all zones - call this when ball reverses direction to ensure clean state
     public void ClearAllZones()
     {
-        bool hadZones = inBadZone || inFineZone || inGoodZone || inPerfectZone;
         inBadZone = false;
         inFineZone = false;
         inGoodZone = false;
         inPerfectZone = false;
-        if (hadZones)
-        {
-            Debug.Log("Cleared all zones");
-        }
     }
     
     // Check if ball is currently in any zone
@@ -114,10 +105,6 @@ public class BallController : MonoBehaviour
             if (SoundFXManager.instance != null)
             {
                 SoundFXManager.instance.PlayHitTableSound(transform);
-            }
-            else
-            {
-                Debug.LogWarning("SoundFXManager.instance is null!");
             }
         }
         

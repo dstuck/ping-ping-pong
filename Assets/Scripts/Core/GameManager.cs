@@ -55,6 +55,23 @@ public class GameManager : MonoBehaviour
 
         playerActions.Enable();
     }
+    
+    private void Update()
+    {
+        // Check for down arrow key or gamepad down to reshuffle cards
+        if (currentState == GameState.Playing && (Keyboard.current != null && Keyboard.current.downArrowKey.wasPressedThisFrame))
+        {
+            ReshuffleCards();
+        }
+    }
+    
+    private void ReshuffleCards()
+    {
+        if (cardDisplay != null)
+        {
+            cardDisplay.GenerateNewCards();
+        }
+    }
 
     private void OnDestroy()
     {
@@ -111,19 +128,15 @@ public class GameManager : MonoBehaviour
         // Check if ball is ready to be hit
         if (!canPlayerHit)
         {
-            Debug.Log("Ball not ready to be hit - waiting for ball to return from opponent");
             return;
         }
 
         // Get current hit quality from ball (check BEFORE clearing zones)
         HitQuality hitQuality = ballController.GetCurrentHitQuality();
-        
-        Debug.Log($"Hit Quality at moment of input: {hitQuality}");
 
         // Check if miss
         if (hitQuality == HitQuality.Miss)
         {
-            Debug.Log("MISS! Game Over");
             // Play missed sound
             if (SoundFXManager.instance != null && ballController != null)
             {
@@ -195,7 +208,6 @@ public class GameManager : MonoBehaviour
 
         // Check if ball speed is high enough to win
         float currentBallSpeed = ballController != null ? ballController.CurrentSpeed : 0f;
-        Debug.Log($"Win check - Ball Speed: {currentBallSpeed:F2}, Threshold: {winSpeedThreshold:F2}");
         if (currentBallSpeed >= winSpeedThreshold)
         {
             Win();
@@ -211,7 +223,6 @@ public class GameManager : MonoBehaviour
 
             // Mark ball as ready to be hit by player again
             canPlayerHit = true;
-            Debug.Log("Ball returned from opponent - ready for player to hit");
 
             if (SoundFXManager.instance != null && ballController != null)
             {
@@ -223,19 +234,19 @@ public class GameManager : MonoBehaviour
     private void Win()
     {
         currentState = GameState.Won;
-        Debug.Log("You Win!");
         // Play missed sound (opponent missed)
         if (SoundFXManager.instance != null && ballController != null)
         {
             SoundFXManager.instance.PlayMissedSound(ballController.transform);
         }
+        // Wait 5 seconds then reset
+        StartCoroutine(ResetAfterDelay(5f));
         // TODO: Add win UI/effects
     }
 
     private void Lose()
     {
         currentState = GameState.Lost;
-        Debug.Log("You Lose!");
         // Wait 5 seconds then reset
         StartCoroutine(ResetAfterDelay(5f));
         // TODO: Add lose UI/effects

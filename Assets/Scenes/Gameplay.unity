@@ -820,8 +820,7 @@ MonoBehaviour:
   fineModifier: 0.8
   goodModifier: 1
   perfectModifier: 1.2
-  ballResetPosition: {x: 0, y: 0}
-  ballResetDirection: {x: 1, y: 0}
+  ballResetLocalPosition: {x: 4, y: 0}
 --- !u!4 &915680814
 Transform:
   m_ObjectHideFlags: 0
@@ -1049,7 +1048,7 @@ Transform:
   m_GameObject: {fileID: 1105766229}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -6.7, y: 0, z: 0}
+  m_LocalPosition: {x: -6, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1506,6 +1505,8 @@ MonoBehaviour:
   paddleClips:
   - {fileID: 8300000, guid: 6c7db70ff47d84a0c9c0976c08e2e8cb, type: 3}
   - {fileID: 8300000, guid: 1dd6771240ebc4c04bae91ec3b52126a, type: 3}
+  missedClips:
+  - {fileID: 8300000, guid: 77976da5078854a8686ae3077c34ecb5, type: 3}
 --- !u!4 &1588156696
 Transform:
   m_ObjectHideFlags: 0
