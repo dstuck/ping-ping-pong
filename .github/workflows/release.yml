@@ -51,11 +51,21 @@ jobs:
           unityVersion: ${{ matrix.unityVersion }}
           targetPlatform: ${{ matrix.targetPlatform }}
 
+      # Debug: List build directory contents
+      - name: List build directory
+        run: |
+          echo "Contents of build directory:"
+          ls -la build/ || echo "build/ does not exist"
+          echo "Contents of build/WebGL directory:"
+          ls -la build/WebGL/ || echo "build/WebGL/ does not exist"
+
       # Output
-      - uses: actions/upload-artifact@v4
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
         with:
           name: Build
-          path: build
+          path: build/WebGL
+          if-no-files-found: error
 
   deployHTML:
     name: Deploy HTML App to itch.io
