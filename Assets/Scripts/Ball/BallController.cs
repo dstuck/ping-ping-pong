@@ -111,7 +111,7 @@ public class BallController : MonoBehaviour
         // Handle opponent collider
         if (other.CompareTag("OpponentCollider"))
         {
-            var gameManager = FindObjectOfType<GameManager>();
+            var gameManager = FindFirstObjectByType<GameManager>();
             if (gameManager != null)
             {
                 gameManager.OnBallHitOpponentCollider();

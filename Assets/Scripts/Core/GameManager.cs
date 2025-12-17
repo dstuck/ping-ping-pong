@@ -58,8 +58,8 @@ public class GameManager : MonoBehaviour
     
     private void Update()
     {
-        // Check for down arrow key or gamepad down to reshuffle cards
-        if (currentState == GameState.Playing && (Keyboard.current != null && Keyboard.current.downArrowKey.wasPressedThisFrame))
+        // Check for confirm button (down arrow) to reshuffle cards
+        if (currentState == GameState.Playing && playerActions.Confirm.triggered)
         {
             ReshuffleCards();
         }
@@ -75,7 +75,7 @@ public class GameManager : MonoBehaviour
 
     private void OnDestroy()
     {
-        if (playerActions != null)
+        if (inputActions != null)
         {
             if (playerActions.ChoiceA != null && onChoiceA != null)
                 playerActions.ChoiceA.performed -= onChoiceA;
@@ -93,12 +93,12 @@ public class GameManager : MonoBehaviour
     {
         if (ballController == null)
         {
-            ballController = FindObjectOfType<BallController>();
+            ballController = FindFirstObjectByType<BallController>();
         }
 
         if (cardDisplay == null)
         {
-            cardDisplay = FindObjectOfType<CardDisplay>();
+            cardDisplay = FindFirstObjectByType<CardDisplay>();
         }
         
         // Initialize ball to starting position
