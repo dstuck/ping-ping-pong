@@ -1,6 +1,6 @@
 # Ping Ping Pong
 
-Game published https://drawacard.itch.io/patchwork
+Game published https://drawacard.itch.io/ping-ping-pong
 
 
 Local Testing
