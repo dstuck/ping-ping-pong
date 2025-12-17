@@ -1,25 +1,14 @@
-name: Build game
+name: Release
 
-on:
-  push: { branches: [main] }
-
-env:
-  UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+on: 
+  push:
+    branches:
+      - main
 
 jobs:
   build:
-    name: Build my project for ${{ matrix.targetPlatform }} on version ${{ matrix.unityVersion }}
+    name: Build my project
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        projectPath:
-        - ./
-        unityVersion:
-          - 2020.1.4f1
-        targetPlatform:
-          - WebGL # Build a HTML playable in browser
-
     steps:
       # Checkout
       - name: Checkout repository
@@ -27,45 +16,41 @@ jobs:
         with:
           lfs: true
 
-      # Cache
-      - uses: actions/cache@v4
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@main
         with:
-          path: ${{ matrix.projectPath }}/Library
-          key: Library-${{ matrix.projectPath }}-${{ matrix.targetPlatform }}
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: true
+    
+      # Cache
+      - uses: actions/cache@v3
+        with:
+          path: Library
+          key: Library-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
           restore-keys: |
-            Library-${{ matrix.projectPath }}-
             Library-
-
-
-      # Test
-      #- name: Run tests
-      #  uses: webbertakken/unity-test-runner@v1.3
-      #  with:
-      #    unityVersion: ${{ matrix.unityVersion }}
 
       # Build
       - name: Build project
-        uses: webbertakken/unity-builder@v0.10
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
-          projectPath: ${{ matrix.projectPath }}
-          unityVersion: ${{ matrix.unityVersion }}
-          targetPlatform: ${{ matrix.targetPlatform }}
-
-      # Debug: List build directory contents
-      - name: List build directory
-        run: |
-          echo "Contents of build directory:"
-          ls -la build/ || echo "build/ does not exist"
-          echo "Contents of build/WebGL directory:"
-          ls -la build/WebGL/ || echo "build/WebGL/ does not exist"
+          targetPlatform: WebGL
+          allowDirtyBuild: true
 
       # Output
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: Build
-          path: build/WebGL
-          if-no-files-found: error
+          path: build
 
   deployHTML:
     name: Deploy HTML App to itch.io
@@ -81,9 +66,9 @@ jobs:
       - name: Deploy HTML build to itch.io
         uses: dstuck/butler-publish-itchio-action@v1.1.0
         env:
-          BUTLER_CREDENTIALS: ${{ secrets.BUTLER_CREDENTIALS }}
-          CHANNEL: webgl-beta
+          BUTLER_CREDENTIALS: ${{ secrets.BUTLER_API_KEY }}
+          CHANNEL: webgl
           ITCH_GAME: ping-ping-pong
-          ITCH_USER: USER_NAME
+          ITCH_USER: drawacard
           PACKAGE: WebGL
 
