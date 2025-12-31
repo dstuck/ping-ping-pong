@@ -126,11 +126,11 @@ public class TimingZone : MonoBehaviour
                 case HitQuality.Bad:
                     ballController.ExitBadZone();
                     
-                    // Check if ball is exiting the bad zone going to the right (missed ball)
-                    // Ball moving right means positive X direction
-                    if (ballController.Direction.x > 0)
+                    // Check if ball is exiting the bad zone going to the left (missed ball)
+                    // Ball moving left means negative X direction (moving away from opponent, past player)
+                    if (ballController.Direction.x < 0)
                     {
-                        // Ball is moving away from player - trigger missed ball
+                        // Ball is moving past player - trigger missed ball
                         var gameManager = FindFirstObjectByType<GameManager>();
                         if (gameManager != null)
                         {
