@@ -23,6 +23,7 @@ public class TimingZone : MonoBehaviour
     private SpriteRenderer spriteRenderer;
     private BoxCollider2D boxCollider;
     private GameObject visualChild;
+    private GameManager gameManager;
 
     private void Start()
     {
@@ -30,6 +31,9 @@ public class TimingZone : MonoBehaviour
         {
             SetupVisual();
         }
+        
+        // Cache GameManager reference for performance
+        gameManager = FindFirstObjectByType<GameManager>();
     }
 
     private void SetupVisual()
@@ -125,6 +129,18 @@ public class TimingZone : MonoBehaviour
             {
                 case HitQuality.Bad:
                     ballController.ExitBadZone();
+                    
+                    // Check if ball is exiting the bad zone going to the left (missed ball)
+                    // Ball moving left means negative X direction (moving away from opponent, past player)
+                    // Only trigger miss if ball has exited ALL zones (not in any zone anymore)
+                    if (ballController.Direction.x > 0 && !ballController.IsInAnyZone())
+                    {
+                        // Ball is moving past player and has exited all zones - trigger missed ball
+                        if (gameManager != null)
+                        {
+                            gameManager.OnBallMissed();
+                        }
+                    }
                     break;
                 case HitQuality.Fine:
                     ballController.ExitFineZone();
