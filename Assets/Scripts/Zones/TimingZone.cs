@@ -23,6 +23,7 @@ public class TimingZone : MonoBehaviour
     private SpriteRenderer spriteRenderer;
     private BoxCollider2D boxCollider;
     private GameObject visualChild;
+    private GameManager gameManager;
 
     private void Start()
     {
@@ -30,6 +31,9 @@ public class TimingZone : MonoBehaviour
         {
             SetupVisual();
         }
+        
+        // Cache GameManager reference for performance
+        gameManager = FindFirstObjectByType<GameManager>();
     }
 
     private void SetupVisual()
@@ -132,7 +136,6 @@ public class TimingZone : MonoBehaviour
                     if (ballController.Direction.x < 0 && !ballController.IsInAnyZone())
                     {
                         // Ball is moving past player and has exited all zones - trigger missed ball
-                        var gameManager = FindFirstObjectByType<GameManager>();
                         if (gameManager != null)
                         {
                             gameManager.OnBallMissed();
