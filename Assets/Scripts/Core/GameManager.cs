@@ -234,6 +234,24 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public void OnBallMissed()
+    {
+        if (currentState != GameState.Playing)
+            return;
+
+        // Only trigger miss if player is able to hit (ball is on their side)
+        if (!canPlayerHit)
+            return;
+
+        // Play missed sound
+        if (SoundFXManager.instance != null && ballController != null)
+        {
+            SoundFXManager.instance.PlayMissedSound(ballController.transform);
+        }
+
+        Lose();
+    }
+
     private void Win()
     {
         currentState = GameState.Won;
